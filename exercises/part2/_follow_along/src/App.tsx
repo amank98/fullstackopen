@@ -1,9 +1,7 @@
-import { NotesInterface } from './index'
+import { NotesInterface } from './components/Note'
 import Note from './components/Note'
 import { useState, useEffect } from 'react'
-import axios from 'axios'
-
-
+import noteService from './services/notes'
 
 const App = () => {
   const [notes, setNotes] = useState([] as NotesInterface[])
@@ -11,16 +9,13 @@ const App = () => {
   const [showAll, setShowAll] = useState(true)
 
   const hook = () => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/notes')
-      .then( (response: any) => {
-        console.log('promise fulfilled')
-        setNotes(response.data)
+    noteService
+      .getAll()
+      .then( (initialNotes: any) => {
+        setNotes(initialNotes)
       })
   }
   useEffect(hook, [])
-  console.log('render', notes.length, 'notes');
   
   const addNote = (event: any) => {
     event.preventDefault()
@@ -31,8 +26,30 @@ const App = () => {
       important: Math.random() < .5
     }
 
-    setNotes(notes.concat(addedNote))
-    setNewNote('')
+    noteService
+      .create(addedNote)
+      .then((createdNote:any) => {
+        setNotes(notes.concat(createdNote))
+        setNewNote('')
+      })
+    
+  }
+
+  const toggleImportanceOf = (id:number) => {
+    const note = notes.find(n => n.id === id) as NotesInterface
+    const changedNote = {...note, important: note ? !note.important : false} as NotesInterface
+
+    noteService
+      .update(id, changedNote)
+      .then((updatedNote:any) => {
+        setNotes(notes.map(note => note.id === id ? updatedNote : note))
+      })
+      .catch(error => {
+        alert(
+          `the note '${note.content}' was already deleted from server`
+        )
+        setNotes(notes.filter(n => n.id !== id))
+      })
   }
 
   const notesToShow = showAll ? notes : notes.filter(note => note.important)
@@ -46,7 +63,7 @@ const App = () => {
         show {showAll ? 'important' : 'all'}
       </button>
       <ul>
-        {notesToShow.map(note => <Note key={note.id} content={note.content}/>)}
+        {notesToShow.map(note => <Note key={note.id} note={note} toggleImportance={() => toggleImportanceOf(note.id)}/>)}
       </ul>
       <form onSubmit={addNote}>
         <input 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import phoneService from './service/phoneService'
 
-interface PersonInterface {
+export interface PersonInterface {
   id: number,
   name: string,
   number: string
@@ -13,24 +13,36 @@ const App = () => {
   const [ newNumber, setNewNumber ] = useState('')
   const [ filter, setFilter ] = useState('')
   const [ applyFilter, setApplyFilter] = useState(false)
+  const [ reset, resetState ] = useState(true)
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then((response:any) => {
-        setPersons(response.data)
-      })
-  }, [])
+    phoneService
+    .getPeople()
+    .then((people: PersonInterface[]) => {
+      setPersons(people)
+    })
+  }, [reset])
 
   const addPerson = (event: any) => {
     event.preventDefault()
-    if (!persons.find(person => person.name === newName)) {
-      setPersons(persons.concat({name: newName, number: newNumber, id: persons.length+1}))
-      setNewName('')
-      setNewNumber('')
+    const foundPerson = persons.find(person => person.name === newName)
+    if (!foundPerson) {
+      phoneService
+      .createPerson({name: newName, number: newNumber, id: persons.length+1})
+      .then((createdPerson: PersonInterface) => {
+          setPersons(persons.concat(createdPerson))
+          setNewName('')
+          setNewNumber('')
+      })
     }
     else {
-      window.alert('${newName} already exists in phonebook')
+      if (window.confirm(newName + " already exists. Do you want to update the number?")) {
+        phoneService
+        .updatePerson(foundPerson.id, {...foundPerson, number: newNumber})
+        .then((createdPerson: PersonInterface) => {
+          resetState(!reset)
+        })
+      }
     }
   }
 
@@ -44,9 +56,19 @@ const App = () => {
     setNewNumber(event.target.value)
   }
 
-  const setFilterChange = (event:any) => {
+  const setFilterChange = (event: any) => {
     event.preventDefault()
     setFilter(event.target.value)
+  }
+
+  const removePerson = (person: PersonInterface) => {
+    if (window.confirm("Do you really want to remove " + person.name + '?')) {
+      phoneService
+      .deletePerson(person.id)
+      .then((response: any) => {
+        resetState(!reset)
+      })
+    }
   }
 
   return (
@@ -80,7 +102,7 @@ const App = () => {
       {
         persons
           .filter(person => applyFilter ? person.name.toLowerCase() === filter.toLowerCase() : person)
-          .map(person => <p>{person.name} {person.number}</p>)
+          .map(person => <> <p> {person.name} {person.number} </p> <button onClick={() => removePerson(person)}> delete </button> </>)
       }
     </div>
   )
