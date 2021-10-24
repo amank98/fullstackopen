@@ -7,6 +7,35 @@ export interface PersonInterface {
   number: string
 }
 
+const AddedComponent = (props: { message: string | null}) => {
+  const {message} = props;
+
+  if (!message) {
+    return null
+  }
+
+  return (
+    <div className='added'>
+      {message}
+    </div>
+  )
+}
+
+const ErrorComponent = (props: { message: string | null}) => {
+  const {message} = props;
+
+  if (!message) {
+    return null
+  }
+
+  return (
+    <div className='error'>
+      {message}
+    </div>
+  )
+}
+
+
 const App = () => {
   const [ persons, setPersons ] = useState([] as PersonInterface[]) 
   const [ newName, setNewName ] = useState('')
@@ -14,6 +43,8 @@ const App = () => {
   const [ filter, setFilter ] = useState('')
   const [ applyFilter, setApplyFilter] = useState(false)
   const [ reset, resetState ] = useState(true)
+  const [ addedMessage, setAddedMessage ] = useState(null as string | null)
+  const [ errorMessage, setErrorMessage ] = useState(null as string | null)
 
   useEffect(() => {
     phoneService
@@ -21,7 +52,7 @@ const App = () => {
     .then((people: PersonInterface[]) => {
       setPersons(people)
     })
-  }, [reset])
+  }, [reset, addedMessage])
 
   const addPerson = (event: any) => {
     event.preventDefault()
@@ -31,6 +62,10 @@ const App = () => {
       .createPerson({name: newName, number: newNumber, id: persons.length+1})
       .then((createdPerson: PersonInterface) => {
           setPersons(persons.concat(createdPerson))
+          setAddedMessage('Added ' + createdPerson.name)
+          setTimeout(() => {
+            setAddedMessage(null)
+          }, 5000)
           setNewName('')
           setNewNumber('')
       })
@@ -40,7 +75,10 @@ const App = () => {
         phoneService
         .updatePerson(foundPerson.id, {...foundPerson, number: newNumber})
         .then((createdPerson: PersonInterface) => {
-          resetState(!reset)
+          setAddedMessage("Updated " + createdPerson.name + "'s phone number to " + createdPerson.number)
+          setTimeout(() => {
+            setAddedMessage(null)
+          }, 5000)
         })
       }
     }
@@ -68,12 +106,20 @@ const App = () => {
       .then((response: any) => {
         resetState(!reset)
       })
+      .catch((error: any) => {
+        setErrorMessage(person.name + ' was already removed from the db.')
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+      })
     }
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <AddedComponent message={addedMessage}/>
+      <ErrorComponent message={errorMessage}/>
       <p>filter shown with</p>
       <input
         onChange={setFilterChange}

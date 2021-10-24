@@ -9,7 +9,7 @@ const Note = (props: {note: NotesInterface, toggleImportance: () => void}) => {
     const content = props.note.content
   
     return (
-      <li> 
+      <li className='note'> 
         {content}
         <button onClick={props.toggleImportance} >
           set as {props.note.important ? "unimportant" : "important"}
