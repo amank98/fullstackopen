@@ -1,0 +1,21 @@
+{
+  "name": "node_and_express",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.tsx",
+  "scripts": {
+    "start": "node index.ts",
+    "dev": "nodemon index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aman Kalsi",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^16.11.4",
+    "nodemon": "^2.0.14",
+    "ts-node": "^10.4.0"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
