@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { NotesInterface } from '../components/Note'
 
-const baseUrl = 'http://localhost:3001/notes'
+const baseUrl = 'http://localhost:3001/api/notes'
 
 const getAll = () => {
     const request = axios.get(baseUrl)

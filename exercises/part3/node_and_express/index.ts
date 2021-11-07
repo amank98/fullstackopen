@@ -1,7 +1,9 @@
 const express = require('express')
+const cors = require('cors')
 const app = express()
 
 app.use(express.json())
+app.use(cors())
 
 interface INote {
   id: number,
@@ -36,6 +38,7 @@ app.get('/', (request: any, response: any) => {
 })
 
 app.get('/api/notes', (request: any, response: any) => {
+  console.log(request.headers);
   response.json(notes)
 })
 
@@ -88,7 +91,7 @@ app.post('/api/notes', (request: any, response: any) => {
   response.json(note)
 })
 
-const PORT = 3002
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
