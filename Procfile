@@ -1,1 +1,1 @@
-web: npm start
+sh -c 'cd ./part3/node_and_express/ && exec npm start'
